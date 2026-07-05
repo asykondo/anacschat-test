@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS チャットシステム検証</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f6f9; }
+        .container { max-width: 600px; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #223f9a; font-size: 24px; margin-bottom: 10px; }
+        p { color: #555; line-height: 1.6; font-size: 16px; margin: 0; }
+        .lang-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-weight: bold; margin-top: 15px; font-size: 14px; }
+        .ja-mode { background-color: #e2f0d9; color: #385723; }
+        .en-mode { background-color: #dee2e6; color: #495057; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 id="page-title">CS チャットシステム検証</h1>
+    <p id="page-desc">日本語チャットテストページです。</p>
+    <div id="lang-status" class="lang-badge ja-mode">現在のモード: 日本語 (ja)</div>
+</div>
+
+<script type='text/javascript'>
+    // URLのパラメータから ?lang=en などを自動で読み取る仕掛け
+    const urlParams = new URLSearchParams(window.location.search);
+    const isEnglish = (urlParams.get('lang') === 'en');
+
+    // 画面の文字をモードに合わせて自動で書き換える
+    if (isEnglish) {
+        document.getElementById('page-title').innerText = "CS Chat System Verification";
+        document.getElementById('page-desc').innerText = "This is the English chat test page.";
+        const badge = document.getElementById('lang-status');
+        badge.innerText = "Current Mode: English (en)";
+        badge.className = "lang-badge en-mode";
+    }
+
+	function initEmbeddedMessaging() {
+		try {
+            // パラメータが en なら 'en_US'、それ以外なら 'ja' を自動セット
+			embeddedservice_bootstrap.settings.language = isEnglish ? 'en_US' : 'ja'; 
+
+			embeddedservice_bootstrap.init(
+				'00D0k0000009HmE',
+				'MIAW_Chatwebpopup',
+				'https://ana-support--anatrain01.sandbox.my.site.com/ESWMIAWChatwebpopup1782969908132',
+				{
+					scrt2URL: 'https://ana-support--anatrain01.sandbox.my.salesforce-scrt.com'
+				}
+			);
+		} catch (err) {
+			console.error('Error loading Embedded Messaging: ', err);
+		}
+	};
+</script>
+<script type='text/javascript' src='https://ana-support--anatrain01.sandbox.my.site.com/ESWMIAWChatwebpopup1782969908132/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+
+<script type='text/javascript'>
+    window.addEventListener('message', function(event) {
+        if (event.data === 'REQUEST_URL') {
+            // パラメータが en なら en用のダミーURL、そうでなければ ja用のダミーURLを自動で作り出す
+            const dummyHostUrl = isEnglish 
+                ? "https://www.ana.co.jp/en/us/cschat-test" 
+                : "https://www.ana.co.jp/ja/jp/cschat-test";
+            
+            console.log('【テストページ】LWCへ偽装URLを送信しました:', dummyHostUrl);
+            
+            if (event.source) {
+                event.source.postMessage({
+                    type: 'HOST_URL',
+                    url: dummyHostUrl
+                }, '*');
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANA チャットLWC 検証ページ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f4f6f9;
+        }
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 { color: #223f9a; font-size: 24px; }
+        p { color: #555; line-height: 1.6; }
+        .status-box {
+            background-color: #e2f0d9;
+            color: #385723;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ANA チャットシステム検証（日本語ページ）</h1>
+    <p>このページは、本来設置する外部サイトのURL構造（パスの先頭が言語コードになる環境）をローカル上でシミュレーションするためのテストページです。</p>
+    
+    <div class="status-box">
+        ステータス: 外部サイト偽装用メッセージ送信準備完了（MIAW読込中）
+    </div>
+</div>
+
+<script type='text/javascript'>
+	function initEmbeddedMessaging() {
+		try {
+			embeddedservice_bootstrap.settings.language = 'ja'; // 日本語検証のため、一時的に 'ja' に変更しています。必要に応じて 'en_US' に戻してください。
+
+			embeddedservice_bootstrap.init(
+				'00D0k0000009HmE',
+				'MIAW_Chatwebpopup',
+				'https://ana-support--anatrain01.sandbox.my.site.com/ESWMIAWChatwebpopup1782969908132',
+				{
+					scrt2URL: 'https://ana-support--anatrain01.sandbox.my.salesforce-scrt.com'
+				}
+			);
+		} catch (err) {
+			console.error('Error loading Embedded Messaging: ', err);
+		}
+	};
+</script>
+<script type='text/javascript' src='https://ana-support--anatrain01.sandbox.my.site.com/ESWMIAWChatwebpopup1782969908132/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+
+<script type='text/javascript'>
+    window.addEventListener('message', function(event) {
+        // LWC側から URLリクエスト（'REQUEST_URL'）が飛んできたら
+        if (event.data === 'REQUEST_URL') {
+            
+            // LWCの JS（handleMessage）が求める「理想の外部サイトURL」を偽装して返信します
+            // パスの1つ目を「ja」にすることで、segments[0] === 'ja' を成立させ、かつカスタム設定にヒットさせます
+            const dummyHostUrl = "https://www.ana.co.jp/ja/jp/cschat-test"; 
+            
+            console.log('【テストページ】LWCへ偽装URLを送信します:', dummyHostUrl);
+            
+            // チャットの iframe（LWCが入っているウィンドウ）に対してメッセージを返却
+            if (event.source) {
+                event.source.postMessage({
+                    type: 'HOST_URL',
+                    url: dummyHostUrl
+                }, '*');
+            }
+        }
+    });
+</script>
+
+</body>
+</html>
